@@ -1,0 +1,60 @@
+#####22-09-2023 Second half
+
+###Joins
+
+import findspark
+
+findspark.init()
+
+findspark.find()
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("Joins").getOrCreate()
+
+sc = spark.sparkContext
+
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+
+from pyspark.sql.functions import *
+
+customerCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/customer.csv')
+lineitemCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/lineitem.csv')
+nationCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/nation.csv')
+orderCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/orders.csv')
+partCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/part.csv')
+partsuppCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/partsupp.csv')
+regionCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/region.csv')
+supplierCsv=spark.read.option("inferSchema",True).option("header",True).option("sep", '\t').csv('/home/labuser/Downloads/Retail_Dataset/supplier.csv')
+
+
+customerCsv.show()
+
+joining_df = customerCsv.join(orderCsv, customerCsv.C_CUSTKEY == orderCsv.O_CUSTKEY, how = "inner")
+
+joining_df.show()
+
+grpdf = joining_df.groupBy("O_CLERK").sum("O_TOTALPRICE")
+grpdf.show()
+
+handOnJoin = joining_df.join(lineitemCsv, joining_df.O_ORDERKEY == lineitemCsv.L_ORDERKEY, how = "inner")
+
+handOnJoin.show()
+
+handOnJoin.select('L_SHIPINSTRUCT').show()
+
+handOnJoin.select(customerCsv["*"], orderCsv["O_TOTALPRICE"]).show()
+
+handOnJoin.rdd.getNumPartitions()
+
+handOnJoin.write.csv('/home/labuser/Downloads/HandOn')
+
+handOnJoin.write.mode("append").parquet('/home/labuser/Downloads/HandOnPar')
+
+test = handOnJoin.repartition(8)
+
+
+test.coalesce(1).write.mode("append").parquet('/home/labuser/Downloads/HandOnParCol')
+
+test.write.mode("append").parquet('/home/labuser/Downloads/HandOnPartest8')
+

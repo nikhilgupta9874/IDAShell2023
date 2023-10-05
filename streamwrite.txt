@@ -1,0 +1,82 @@
+dbutils.widgets.text("test","")
+a = dbutils.widgets.get("ida")
+print(a)
+
+dbutils.widgets.dropdown("choose_colors","white",["Red","Black","Blue","white"],"color dropdwon")
+t = dbutils.widgets.get("choose_colors")
+print(t)
+
+dbutils.widgets.combobox("combo_ida","test",["1","2","3"])
+
+bmghNcbolaW1EOx7MI5MNor7XG7Zs0Eb2hE4azGotWam3hIbGJxVtioqDUlSU1tuz1YhKVswwkOd+AStKlXIwQ==
+
+************
+dbutils.fs.mount(source = "wasbs://input@idashelladlsgen2.blob.core.windows.net",
+                 mount_point ="/mnt/input",
+                 extra_configs = {"fs.azure.account.key.idashelladlsgen2.blob.core.windows.net":dbutils.secrets.get(scope = "adbScope", key = "adlsgen2")})
+
+**********************************
+widget use case
+
+
+import time
+input_value = dbutils.widgets.get("ida")
+operation_type = dbutils.widgets.get("ida1")
+
+# Define a function to perform the specified operation
+def perform_operation(value, operation):
+    if operation == "Double":
+        return value * 2
+    elif operation == "Square":
+        return value ** 2
+    else:
+        return "Invalid operation"
+
+# Process the user input
+try:
+    input_value = float(input_value)
+    result = perform_operation(input_value, operation_type)
+    print(f"Result of {operation_type} operation on {input_value}: {result}")
+except ValueError:
+    print("Invalid input. Please enter a numeric value.")
+
+# Sleep for a while to keep the notebook running
+time.sleep(5)
+
+***************************
+Structured Streaming
+**
+
+from pyspark.sql.types import *
+
+schema = StructType([StructField("lsoa_code", StringType(), True),\
+                         StructField("borough", StringType(), True),\
+                         StructField("major_category", StringType(), True),\
+                         StructField("minor_category", StringType(), True),\
+                         StructField("value", StringType(), True),\
+                         StructField("year", StringType(), True),\
+                         StructField("month", StringType(), True)])
+
+Streamdf = spark.readStream.schema(schema).option("header",True).csv("/mnt/input/droplocation")
+
+trimmedDF = Streamdf.select(
+                                      Streamdf.borough,
+                                      Streamdf.year,
+                                      Streamdf.month,
+                                      Streamdf.value
+                                      )\
+                             .withColumnRenamed(
+                                      "value",
+                                      "convictions"
+                                      )
+
+
+   query = trimmedDF.writeStream\
+                      .outputMode("append")\
+                      .format("csv") \
+                      .option("path", "/mnt/input/destination") \
+                      .option("checkpointLocation", "/mnt/input/checkpoint") \
+                      .start()\
+                      .awaitTermination()
+
+Link for dataset : https://github.com/harunraseed/Stream_Dataset.git

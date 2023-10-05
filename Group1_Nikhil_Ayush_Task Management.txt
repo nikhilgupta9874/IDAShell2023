@@ -1,0 +1,43 @@
+Scenario: Task Management Program
+
+#defining a class named task with 4 fields
+class Task:
+    def __init__(self, no, name, duration, isComplete):
+        self.no = no
+        self.name = name
+        self.duration = duration
+        self.isComplete = isComplete
+#task dictionary to store task objects. the key will be an integer
+Tasks = {}
+#infinite loop to create a menu driven program
+while(True):
+    print("\n")
+    print("*******************")
+    print("1. Add a new task\n")
+    print("2. List all tasks\n")
+    print("3. Mark a task as complete\n")
+    print("4. Delete a task\n")
+    print("5. Quit\n")
+    print("*******************")
+    print("\n")
+    inp = input("Please enter a number\n")
+    match inp:
+        #creating a task object
+        case "1":
+            no = int(input("Enter task number"))
+            name = input("Enter task name")
+            duration = input("Enter task duration")
+            isComplete = input("Enter if task is complete")
+            taskObj = Task(no, name, duration, isComplete)
+            Tasks[no] = taskObj
+        case "2":
+            for i in Tasks:
+                print(str(Tasks[i].no) + " " + Tasks[i].name + " " + Tasks[i].isComplete)
+        case "3":
+            taskn = int(input("Enter the task number to be marked as complete"))
+            Tasks[taskn].isComplete = "true"
+        case "4":
+            tasknd = int(input("Enter the task number to be deleted"))
+            Tasks.pop(tasknd)
+        case "5":
+            break

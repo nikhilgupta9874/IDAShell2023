@@ -1,0 +1,77 @@
+import findspark
+
+findspark.init()
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder.appName("tempApp_25_09").getOrCreate()
+
+sc = spark.sparkContext
+
+from pyspark.sql.types import StructType, StructField, IntegerType, StringType
+
+from pyspark.sql.functions import *
+
+test_df = [("James","Sales","NY",90000,34,10000),
+    ("Michael","Sales","NY",86000,56,20000),
+    ("Robert","Sales","CA",81000,30,23000),
+    ("Maria","Finance","CA",90000,24,23000),
+    ("Raman","Finance","CA",99000,40,24000),
+    ("Scott","Finance","NY",83000,36,19000),
+    ("Jen","Finance","NY",79000,53,15000),
+    ("Jeff","Marketing","CA",80000,25,18000),
+    ("Kumar","Marketing","NY",91000,50,21000)
+  ]
+
+ud_scehma = ["employee_name","department","state","salary","age","bonus"]
+
+df = spark.createDataFrame(data=test_df,schema = ud_scehma)
+
+df.show()
+
+df.cache()
+
+df.count()
+
+df.persist()
+
+df.unpersist()
+
+df.persist(StorageLevel.MEMORY_ONLY)
+
+from pyspark.storagelevel import StorageLevel
+
+import sys
+print(sys.version)
+
+df.groupBy("department", "state").agg(sum("salary").alias("a_sal"), avg("salary").alias("avg_sal")).where(col("avg_sal") > 80000).show()
+
+df.createOrReplaceTempView("ida")
+
+spark.sql("select * from ida")
+
+spark.sql("create database idashell")
+
+spark.sql("use idashell")
+
+df.write.saveAsTable("test_dbl")
+
+test = spark.sql("describe extended test_dbl")#managed table
+
+test.show()
+
+df.write.option("path","/home/labuser/unmanaged/").saveAsTable("t_tbl")
+
+test_01=spark.sql("describe extended t_tbl")
+test_01.show()
+
+spark.sql("drop table default.test_dbl") #dropping managed table
+
+spark.sql("drop table idashell.t_tbl") #dropping unmanaged table
+
+df.rdd.getNumPartitions()
+
+df.write.partitionBy("department", "state").csv("/home/labuser/partByDeptStat/") #partition by a particular column
+
+df.rdd.getNumPartitions()
+
